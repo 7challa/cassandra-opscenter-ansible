@@ -1,0 +1,21 @@
+ - hosts: all
+   sudo: true
+
+   tasks:
+     - name: Push profile
+       copy: src=files/{{ item }} dest=/home/cassandra owner=cassandra group=cassandra mode=0754
+       with_items:
+           - ".bashrc"
+           - ".bash_profile"
+
+     - name: Update memlock /etc/security/limits.conf
+       lineinfile: dest=/etc/security/limits.conf  line="cassandra - memlock unlimited" state=present 
+
+     - name: Update nofile /etc/security/limits.conf
+       lineinfile: dest=/etc/security/limits.conf  line="cassandra - nofile 100000" state=present 
+
+     - name: Update nproc /etc/security/limits.conf
+       lineinfile: dest=/etc/security/limits.conf  line="cassandra - nproc 32768" state=present 
+
+     - name: Update as /etc/security/limits.conf
+       lineinfile: dest=/etc/security/limits.conf  line="cassandra - as unlimited" state=present 

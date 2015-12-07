@@ -1,0 +1,13 @@
+#!/bin/sh
+
+export JAVA_HOME=/opt/app/{{ jdk_version }}
+export PATH=$JAVA_HOME/bin:$PATH
+
+export DSE_HOME=/opt/app/dse
+
+export CASSANDRA_HOME=$DSE_HOME/resources/cassandra
+export OPSC_HOME=/opt/app/opscenter
+export PATH="$PATH:$DSE_HOME/bin:$CASSANDRA_HOME/bin:$OPSC_HOME/bin"
+
+export CASSANDRA_PID_FILE="{{ cassandra_pid_file }}"
+$DSE_HOME/bin/dse cassandra -p $CASSANDRA_PID_FILE

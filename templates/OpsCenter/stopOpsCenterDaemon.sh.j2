@@ -1,0 +1,3 @@
+#!/bin/sh
+
+kill -9 `ps -ef | grep start_opscenter.py | grep -v "grep start_opscenter.py" | awk '{print $2}'`

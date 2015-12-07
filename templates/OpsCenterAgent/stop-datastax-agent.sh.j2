@@ -1,0 +1,3 @@
+#!/bin/sh
+
+kill -9 `ps -ef | grep datastax-agent-5.2.1-standalone.jar | grep -v "grep datastax-agent-5.2.1-standalone.jar" | awk '{print $2}'`

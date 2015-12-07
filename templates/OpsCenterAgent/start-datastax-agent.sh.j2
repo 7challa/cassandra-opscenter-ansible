@@ -1,0 +1,6 @@
+#!/bin/sh
+
+export JAVA_HOME=/opt/app/{{ jdk_version }}
+export PATH=$JAVA_HOME/bin:$PATH
+export OPSCENTER_HOME={{ opscenter_agent_home }}
+$OPSCENTER_HOME/bin/datastax-agent

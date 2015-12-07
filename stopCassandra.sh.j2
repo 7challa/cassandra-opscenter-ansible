@@ -1,0 +1,86 @@
+#!/bin/sh
+
+export JAVA_HOME=/opt/app/{{ jdk_version }}
+export DSE_HOME=/opt/app/dse
+
+export PATH=$JAVA_HOME/bin:$DSE_HOME/bin:$PATH
+export JMX_PORT=7199
+export CASSANDRA_PID_FILE="{{ cassandra_pid_file }}"
+export NODETOOL_CMD="nodetool -h localhost -p ${JMX_PORT}"
+
+disableGossip() {
+
+	echo "Disabling gossip ...."
+	$NODETOOL_CMD disablegossip && echo "Disabled gossip & sleeping for 30 secs ...."
+
+}
+
+
+disablethrift() {
+
+	echo "Disabling thrift ...."
+	$NODETOOL_CMD disablethrift && echo "Disabled thrift & sleeping for 15 secs ...."
+}
+
+
+drain() {
+
+	echo "Flushing memtables to disk ...."
+	$NODETOOL_CMD drain
+
+}
+
+
+kill() {
+
+	export PID=`cat $CASSANDRA_PID_FILE`
+	if [ -f $CASSANDRA_PID_FILE ]; then
+	   echo "Stopping Cassandra java process with PID: `cat $CASSANDRA_PID_FILE`"
+	   /bin/kill -9 `cat $CASSANDRA_PID_FILE` && rm -rf $CASSANDRA_PID_FILE
+	fi
+	echo -e "\e[1;31;40mIf the cassandra process with PID=$PID is still running, kill it. \e[0m"
+	   
+}
+
+
+usage() {
+
+	echo "To stop gracefully ...."
+	echo "./`basename $0` -g "
+	echo "To force shutdown ...."
+	echo "./`basename $0` -f " 
+
+}
+
+
+ring() {
+ # To be deleted after testing
+      $NODETOOL_CMD ring
+
+}
+
+checkStatus() {
+   echo "Test if Cassandra is already shutdown"
+   
+}
+
+
+case $1 in
+	-g)
+	 echo "Shutting down gracefully"
+	 disableGossip && sleep 30
+	 disablethrift && sleep 15
+	 drain && kill
+	 ;;
+        -f)
+	 echo "Shutting down forcefully"
+	 kill
+	 ;;
+	-t)
+	 # For testing
+	 ring
+	 ;;
+	*)
+	 usage
+	 ;;
+esac

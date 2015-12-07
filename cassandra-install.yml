@@ -1,0 +1,99 @@
+---
+- hosts: all
+  gather_facts: false
+  sudo: yes
+
+  tasks:
+    - name: Ensure cassandra group is available
+      group: name={{ cassandra_group }} state=present
+      register: group_result
+
+    - name: Ensure cassandra user is available 
+      user: name={{ cassandra_user }} group={{ cassandra_group }} state=present
+      when: group_result|success
+      
+    - name: Create cassandra data root directory
+      file: path={{ cassandra_data_root_dir }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 state=directory
+
+    - name: Create subdirectories under data root directory
+      file: path={{ cassandra_data_root_dir }}/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 state=directory
+      with_items:
+         - data
+         - commitlog
+         - saved_caches
+                 
+    - name: Create cassandra log root directory
+      file: path={{ cassandra_log_root_dir }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 state=directory
+
+    - name: Create cassandra log directory
+      file: path={{ cassandra_log_root_dir }}/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 state=directory      
+      with_items:
+          - "cassandra"
+          - "datastax-agent"
+           
+    - name: Install {{ jdk_version }}
+      unarchive: src=files/{{ jdk_version }}.gz dest=/opt/app/ owner={{ cassandra_user }} group={{ cassandra_group }}
+     
+    - name: Install {{ dse_version }}
+      unarchive: src=files/{{ dse_version }}-bin.tar.gz dest=/opt/app/ owner={{ cassandra_user }} group={{ cassandra_group }}
+       
+    - name: Update cassandra.yaml and cassandra-env.sh
+      template: src=files/{{ item }}.j2 dest=/opt/app/{{ dse_version }}/resources/cassandra/conf/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0644
+      with_items:
+          - "cassandra.yaml"
+          - "cassandra-env.sh"
+          - "logback.xml"
+
+    - name: Update cassandra-topology.properties
+      copy: src=files/cassandra-topology.properties.{{ cassandra_cluster_name }} dest=/opt/app/{{ dse_version }}/resources/cassandra/conf/cassandra-topology.properties owner={{ cassandra_user }} group={{ cassandra_group }} mode=0644
+
+    - name: Create scripts directory
+      file: path=/opt/app/{{ dse_version }}/scripts owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 state=directory
+
+    - name: Setup cassandra startup scripts
+      template: src=files/{{ item }}.j2 dest=/opt/app/{{ dse_version }}/scripts/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0644
+      with_items:
+          - "startCassandra.sh"
+          - "stopCassandra.sh"
+        
+    - name: Install OpsCenter - {{ opscenter_version }}
+      unarchive: src=files/{{ opscenter_version }}.tar.gz dest=/opt/app/ owner={{ cassandra_user }} group={{ cassandra_group }}
+
+    - name: Setup OpsCenter scripts directory
+      file: path=/opt/app/{{ opscenter_version }}/scripts owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 state=directory
+
+    - name: Setup OpsCenter scripts
+      template: src=files/templates/OpsCenter/{{ item }}.j2 dest=/opt/app/{{ opscenter_version }}/scripts/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0700
+      with_items: 
+           - "startOpsCenterDaemon.sh"
+           - "stopOpsCenterDaemon.sh"
+
+    - name: Create datastax-agent scripts directory
+      file: path=/opt/app/{{ dse_version }}/datastax-agent/scripts owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 state=directory
+
+
+    - name: Setup OpsCenter Agent scripts
+      template: src=files/templates/OpsCenterAgent/{{ item }}.j2 dest=/opt/app/{{ dse_version }}/datastax-agent//scripts/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0700
+      with_items: 
+           - "start-datastax-agent.sh"
+           - "stop-datastax-agent.sh"
+
+    - name: Set up OpsCenter Agent
+      template: src=files/templates/OpsCenterAgent/{{ item }}.j2 dest=/opt/app/{{ dse_version }}/datastax-agent/conf/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0644
+      with_items: 
+           - "address.yaml"
+           - "log4j.properties"
+
+    - name: Set permissions 
+      file: path=/opt/app/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 recurse=yes
+      with_items:
+           - "{{ jdk_version }}"  
+           - "{{ dse_version }}"
+           - "{{ opscenter_version }}"
+          
+    - name: Create dse soft link
+      file: src=/opt/app/{{ dse_version }} dest=/opt/app/dse owner={{ cassandra_user }} group={{ cassandra_group }} state=link   
+
+    - name: Create opscenter soft link
+      file: src=/opt/app/{{ opscenter_version }} dest=/opt/app/opscenter owner={{ cassandra_user }} group={{ cassandra_group }} state=link    
+
