@@ -1,0 +1,17 @@
+---
+- hosts: all
+  any_errors_fatal: true
+  gather_facts: no
+  remote_user: ansible
+  sudo: yes
+  sudo_user: cassandra
+  serial: 1
+
+
+  tasks:
+    - name: Update OpsCenter Agent Configuration
+      template: src=/opt/ansible/ansible_files/cassandra_install/templates/OpsCenterAgent/{{ item }}.j2 dest=/opt/app/{{ dse_version }}/datastax-agent/conf/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750
+      with_items:
+           - "address.yaml"
+           - "log4j.properties"
+           - "datastax-agent-env.sh"

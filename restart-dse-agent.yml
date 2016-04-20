@@ -1,0 +1,18 @@
+---
+- hosts: all
+  any_errors_fatal: true
+  gather_facts: no
+  remote_user: ansible
+  sudo: yes
+  sudo_user: cassandra
+  serial: 1
+
+  tasks:
+     - name: Stop dse-agent
+       shell: /opt/app/dse/datastax-agent/scripts/stop-datastax-agent.sh 
+       ignore_errors: True
+     
+     - pause: seconds=10
+
+     - name: Start dse-agent
+       shell: nohup /opt/app/dse/datastax-agent/scripts/start-datastax-agent.sh &

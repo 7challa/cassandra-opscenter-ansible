@@ -1,0 +1,14 @@
+---
+- hosts: all
+#  any_errors_fatal: true
+  gather_facts: no
+  remote_user: ansible
+  sudo: yes
+  sudo_user: cassandra
+  serial: 1
+
+
+  tasks:
+    - name: Check compactions
+      shell: export JAVA_HOME=/opt/app/jdk1.8.0_65 && /opt/app/dse/bin/nodetool getcompactionthroughput
+      register: result

@@ -1,0 +1,16 @@
+---
+- hosts: all
+#  any_errors_fatal: true
+  gather_facts: no
+  remote_user: ansible
+  sudo: yes
+  serial: 1
+
+
+  tasks:
+    - name: Check IPv6
+      shell: ifconfig | grep "inet6 addr"
+      register: result
+     
+    - debug: msg="{{inventory_hostname}} IPv6 Enabled"
+      when:  "'inet6 addr' in result.stdout"
