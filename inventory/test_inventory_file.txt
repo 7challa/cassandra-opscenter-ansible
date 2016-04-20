@@ -1,27 +1,32 @@
 [cassandra]
-host1.com
-host2.com
-host3.com
-host4.com
-host5.com
+[cassandra]
+10.200.60.191
+10.200.60.192
+10.200.60.193
+10.200.60.194
+10.200.60.195
+10.200.60.196
+10.200.60.197
+10.200.60.198
 
 [cassandra:vars]
 cassandra_user=cassandra
 cassandra_group=cassandra
 jdk_version=jdk1.8.0_65
 dse_version=dse-4.8.0
-cassandra_cluster_name=HarmonyLewPerformance
+cassandra_cluster_name=TestCluster
 cassandra_data_root_dir=/opt/app/dse-data
 opscenter_version=opscenter-5.2.1
 max_heap_size=8G
 heap_newsize=200M
 cassandra_log_root_dir=/opt/app/logs
 cassandra_pid_file=/opt/app/logs/cassandra/cassandra.pid
-seed_nodes=host1.com,host3.com,host5.com
+#Calma seperated nodes that are seed nodes
+seed_nodes=10.200.60.191,10.200.60.195
 cassandra_logdir=/opt/app/logs/cassandra
 
 #OpsCenter
-opscenter_controller_host=host2.com
+opscenter_controller_host=10.233.67.186
 opscenter_home=/opt/app/opscenter
 opscenter_agent_home=/opt/app/dse/datastax-agent
 opscenter_agent_log_dir=/opt/app/logs/datastax-agent
