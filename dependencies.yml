@@ -7,15 +7,30 @@
        with_items:
            - ".bashrc"
            - ".bash_profile"
+       tags:
+         - profile
 
      - name: Update memlock /etc/security/limits.conf
        lineinfile: dest=/etc/security/limits.conf  line="cassandra - memlock unlimited" state=present 
+       tags:
+         - memlock
 
      - name: Update nofile /etc/security/limits.conf
        lineinfile: dest=/etc/security/limits.conf  line="cassandra - nofile 100000" state=present 
+       tags:
+         - nofile
 
      - name: Update nproc /etc/security/limits.conf
        lineinfile: dest=/etc/security/limits.conf  line="cassandra - nproc 32768" state=present 
+       tags:
+         - nproc
 
      - name: Update as /etc/security/limits.conf
        lineinfile: dest=/etc/security/limits.conf  line="cassandra - as unlimited" state=present 
+       tags:
+         - as
+
+     - name: Set vm.max_map_count to 1048575
+       sysctl: name=vm.max_map_count value=1048575 state=present reload=no
+       tags:
+         - max_map_count
