@@ -1,0 +1,57 @@
+# This play book checks if a cassandra server running on a host is DSE (V1) or Apache Cassandra (V2)
+# How it works?
+# Ansible run a process check (ps -ef | grep <pattern>. Based on the output it can identify a V1 or V2. It also runs a nodetool version 
+# based on different flavors of Cassandra. 
+
+---
+- hosts: cassandra
+  any_errors_fatal: true
+  #gather_facts: no
+  remote_user: "{{remote_user}}"
+  sudo: yes
+  serial: 1
+  sudo_user: cassandra
+
+  tasks:
+
+  - name: Check java process 
+    shell: ps -ef | grep cassandraNode | grep -v 'grep cassandraNode'
+    register: java_process 
+    ignore_errors: True 
+
+  - debug: 
+      var: java_process.stdout_lines
+
+  - debug: 
+      var: java_process
+
+# Set the node_type to V1 if the ps -ef output has com.datastax.bdp.server.DseDaemon
+ - set_fact:
+      node_type: v1
+    when: java_process.stdout_lines[0].find("com.datastax.bdp.server.DseDaemon") != -1
+
+# Set the node_type to V2 if the ps -ef output has org.apache.cassandra.service.CassandraDaemon
+  - set_fact:
+      node_type: v2
+    when: java_process.stdout_lines[0].find("org.apache.cassandra.service.CassandraDaemon") != -1
+  
+  - debug:
+     var: node_type 
+
+  - name: Run nodetool version
+    shell: export JAVA_HOME=/opt/app/jdk1.6.0_39;/opt/app/dse/bin/nodetool version
+    register: nodetool_v1
+    when: node_type=="v1"
+
+  - debug:
+      var: nodetool_v1.stdout
+    when: node_type=="v1"
+
+  - name: Run nodetool version
+    shell: export JAVA_HOME=/opt/app/jdk1.8.0_131;/opt/app/cassandra/bin/nodetool version
+    register: nodetool_v2
+    when: node_type=="v2"
+
+  - debug:
+      var: nodetool_v2.stdout
+    when: node_type=="v2"
