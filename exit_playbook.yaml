@@ -1,0 +1,59 @@
+# Playbook will terminate if async operation doesn't complete
+# Useful in situations where you want an operation to be executed on a bunch of hosts in a rolling fashion but the next one cannot be 
+# started if the previous one fails or still in progress beyond async time
+# Tested on ansible 2.7.7
+---
+- hosts: all
+  any_errors_fatal: true
+  gather_facts: yes
+  remote_user: "{{ remote_user }}"
+  serial: 1
+
+  tasks:
+     - set_fact:
+         continue_task: true
+
+     - name: 
+       block:
+         - debug:
+             msg: 'Start: of the play'
+         
+         - name: Script Action
+           shell: /opt/app/script.sh > /opt/app/script.out
+           #Task is expected to complete in 15 seconds
+           async: 15
+           # Poll every 5 seconds
+           poll: 5
+           register: script_output
+           
+           # Check for pattern in the log file
+         - name: Wait Script to complete
+           wait_for: path=/opt/app/script.out search_regex='Script ended'
+
+
+       rescue:
+         - debug:
+             msg: 'Inside rescue block'
+
+         - set_fact:
+             continue_task: false
+
+         - debug:
+             msg: 'Value of fact continue_task: {{continue_task}}'
+
+         - debug:
+             var: script_output
+
+         - name: Email Action
+           local_action: mail subject='Script - {{ script_output.msg }} on {{ inventory_hostname }}.' to='sender@email.com' from='receiver@email.com'
+
+         - name: End the playbook
+           fail: msg="Ending playbook script failed to complete in async seconds/minutes"
+           when: continue_task == false 
+
+       always:
+         - debug:
+             msg: "Executing always: Pause Action"
+
+         - name: Pause Action 
+           pause: seconds=5
