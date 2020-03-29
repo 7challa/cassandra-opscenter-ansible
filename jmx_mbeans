@@ -1,0 +1,21 @@
+Some common JMX MBeans for troubleshooting as well as tuning. 
+
+bean org.apache.cassandra.internal:type=HintedHandoff
+set CoreThreads 4
+set MaximumThreads 4
+
+bean org.apache.cassandra.net:type=FailureDetector
+set PhiConvictThreshold 10.0
+
+bean org.apache.cassandra.internal:type=CompactionExecutor
+set CoreThreads 4
+set MaximumThreads 4
+
+bean org.apache.cassandra.db:type=StorageService
+set CompactionThroughputMbPerSec
+
+bean org.apache.cassandra.net:type=Gossiper
+run unsafeAssassinateEndpoint <cassandra_node_to_kill>
+
+
+bean org.apache.cassandra.db:type=StorageService forceTerminateAllRepairSessions
