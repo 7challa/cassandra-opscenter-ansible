@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export JAVA_HOME=/usr/java/latest
+export PATH=$JAVA_HOME/bin:$PATH
+export CASSANDRA_HOME=/opt/app/cassandra
+
+
+echo "Started import `date`"
+/opt/app/cassandra/bin/cqlsh `hostname` -u cassdba -p {{ PASSWD }} -f ./data_import.cql
+echo "Ended import `date`"
