@@ -1,0 +1,19 @@
+---
+- hosts: all
+  any_errors_fatal: true
+  gather_facts: false
+
+  tasks:
+    - name: Create /opt/app/cassandra/scripts/data_migration/{{ KEYSPACE_NAME_NEW }}
+      file: path=/opt/app/cassandra/scripts/data_migration/{{ KEYSPACE_NAME_NEW }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750 state=directory
+      become: yes
+
+    - name: Setup migration scripts for {{ KEYSPACE_NAME_NEW }}
+      template: src=templates/{{ item }}.j2 dest=/opt/app/{{ apache_cassandra_version }}/scripts/data_migration/{{ KEYSPACE_NAME_NEW }}/{{ item }} owner={{ cassandra_user }} group={{ cassandra_group }} mode=0750
+      with_items:
+            - "1_run_data_export.sh"
+            - "2_run_data_import.sh"
+            - "3_validation.sh"
+            - "data_export.cql"
+            - "data_import.cql"
+      become: yes
