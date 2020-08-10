@@ -1,0 +1,12 @@
+[cluster]
+localhost
+
+[cluster:vars]
+cassandra_user=cassandra
+cassandra_group=cassandra
+apache_cassandra_version=apache-cassandra-2.1.9
+TABLE_NAME=my_new_table
+KEYSPACE_NAME_OLD=old_keyspace
+KEYSPACE_NAME_NEW=new_keyspace
+PASSWD=dummy
+APPLICATION_USER=cassandra_application_user
