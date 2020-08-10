@@ -1,0 +1,21 @@
+#!/bin/sh
+
+export JAVA_HOME=/usr/java/latest
+export PATH=$JAVA_HOME/bin:$PATH
+export CASSANDRA_HOME=/opt/app/cassandra
+
+echo 'Count from old table {{ KEYSPACE_NAME_OLD }}."{{ TABLE_NAME }}"'
+/opt/app/cassandra/bin/cqlsh `hostname` -u cassdba -p {{ PASSWD }} -e 'SELECT COUNT(*) FROM {{ KEYSPACE_NAME_OLD }}."{{ TABLE_NAME }}";'
+
+echo 'Count from new table {{ KEYSPACE_NAME_NEW }}."{{ TABLE_NAME }}"'
+/opt/app/cassandra/bin/cqlsh `hostname` -u cassdba -p {{ PASSWD }} -e 'SELECT COUNT(*) FROM {{ KEYSPACE_NAME_NEW }}."SHORT_URL_MAPPING";'
+
+echo 'Grant permissions to the new table {{ KEYSPACE_NAME_NEW }}."{{ TABLE_NAME }}"'
+/opt/app/cassandra/bin/cqlsh `hostname` -u cassdba -p {{ PASSWD }} -e 'GRANT SELECT PERMISSION ON KEYSPACE {{ KEYSPACE_NAME_NEW }} TO {{ APPLICATION_USER }};'
+/opt/app/cassandra/bin/cqlsh `hostname` -u cassdba -p {{ PASSWD }} -e 'GRANT MODIFY PERMISSION ON KEYSPACE {{ KEYSPACE_NAME_NEW }} TO {{ APPLICATION_USER }};'
+
+echo 'Check permissions on the old table {{ KEYSPACE_NAME_OLD }}."{{ TABLE_NAME }}"'
+/opt/app/cassandra/bin/cqlsh `hostname` -u cassdba -p {{ PASSWD }} -e 'LIST ALL PERMISSIONS ON TABLE {{ KEYSPACE_NAME_OLD }}."{{ TABLE_NAME }}"'
+
+echo 'Check permissions on the new table {{ KEYSPACE_NAME_NEW }}."{{ TABLE_NAME }}"'
+/opt/app/cassandra/bin/cqlsh `hostname` -u cassdba -p {{ PASSWD }} -e 'LIST ALL PERMISSIONS ON TABLE {{ KEYSPACE_NAME_NEW }}."{{ TABLE_NAME }}";'
