@@ -1,0 +1,1 @@
+COPY {{ KEYSPACE_NAME_NEW }}."{{ TABLE_NAME }}" (<columns to select>) FROM '/tmp/{{ KEYSPACE_NAME_NEW }}_{{ TABLE_NAME }}.csv' WITH HEADER = TRUE;
