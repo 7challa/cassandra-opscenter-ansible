@@ -1,7 +1,7 @@
 # cassandra-opscenter-ansible
 Ansible script to install Cassandra (DataStaxEnterprise) and OpsCenter to a set of servers
 
-Usage:
+### Usage:
 
 If you have SSH keys already setup between Ansible server and the Cassandra hosts:
 ```javascript
