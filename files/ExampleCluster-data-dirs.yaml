@@ -1,0 +1,4 @@
+---
+ data_file_dirs:
+      - /data1/data
+      - /data2/data
