@@ -1,0 +1,14 @@
+#This play book fails if run in serial mode. But it helps to run a task on a set of tasks
+---
+- hosts: all
+#  serial: 1
+  any_errors_fatal: true
+  gather_facts: true
+
+
+  tasks:
+# Print node count
+    - debug:
+        msg: "node count is {{ groups['cassandra'] | length }}"
+      delegate_to: localhost
+      run_once: true
