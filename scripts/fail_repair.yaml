@@ -1,0 +1,26 @@
+#The below play can be used in case where repair is manually run using a script 
+---
+- hosts: all
+  any_errors_fatal: true
+  gather_facts: no
+  remote_user: ansible
+  serial: 1
+
+  tasks:
+  - name: Copy repair script
+    copy: src=/tmp/test.sh dest=/tmp/test.sh owner=ansible group=ansible mode=0755 force=true
+    tags:
+        - copy_repair_script
+
+#Fire and poll
+#Max this task can run 40seconds but it is polled ever 10seconds
+  - name: Run Repair
+    shell: cd /tmp; /tmp/test.sh > /tmp/test.log
+    async: 40
+    poll: 10
+
+  - name: Check log for repair completion
+    shell: cat /tmp/test.log
+    register: repair_log
+    failed_when: "'Test Ended' not in repair_log.stdout"
+
