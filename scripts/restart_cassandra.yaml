@@ -1,0 +1,45 @@
+---
+- hosts: all
+  serial: 1
+  any_errors_fatal: true
+  gather_facts: true
+  sudo: yes
+
+  tasks:
+    - name: Check if any node is down
+      shell: /opt/app/cassandra/bin/nodetool status | grep -c UN
+      become_user: cassandra
+      register: down_count
+
+    - debug:
+        msg: "Down count {{ down_count.stdout }}"
+
+    - debug:
+        msg: "Marking playbook failure due to down node on the cluster"
+      failed_when: {{ down_count.stdout }} > 0
+
+    - name: Stop cassandra
+      shell: /opt/app/cassandra/scripts/stopCassandra.sh -g
+      become_user: cassandra
+
+    - name: Brief pause after stop
+      pause:
+       seconds: 30
+
+    - name: Start cassandra
+      shell: nohup /opt/app/cassandra/scripts/startCassandra.sh > /opt/app/cassandra/scripts/start.log 2>&1 &
+      become_user: cassandra
+      tags:
+        - start_cassandra
+
+    - name: Pausing before moving on to next node
+      pause:
+       minutes: 2
+
+    - name: nodetool status
+      shell: /opt/app/cassandra/bin/nodetool status | grep -v UN
+      become_user: cassandra
+      register: nodetool_status
+
+    - debug:
+        msg: " {{ nodetool_status.stdout }} "
