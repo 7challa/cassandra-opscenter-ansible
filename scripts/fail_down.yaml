@@ -33,6 +33,7 @@
         msg: "Print only on TRUE condition"
       when: node_up_count.stdout | int == {{ node_count }}
 
+#Playbook will fail on a node down in cassandra cluster
     - debug:
        msg: "Marking playbook failure due to down node on the cluster"
       failed_when: node_up_count.stdout | int != {{ node_count }}
